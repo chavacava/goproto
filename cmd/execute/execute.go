@@ -9,26 +9,40 @@ import (
 	"go/printer"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 )
 
 const (
-	requiresNonil = iota
-	requiresExp   = iota
+	versionNum = "0.5"
 )
 
+//Execute is the entry point of this utility
 func Execute() {
 	srcFile := flag.String("i", "", "input file (defaults to stdin)")
 	outFile := flag.String("o", "", "output file (defaults to stdout)")
 	onlyPublic := flag.Bool("public-only", true, "only generates prototypes of public functions")
 	binaryHeader := flag.Bool("include-comp-comment", true, "includes a //go:binary-only-package compilation comment")
+	v := flag.Bool("v", false, "prints current version")
 	flag.Parse()
 
-	src, err := ioutil.ReadFile(*srcFile)
-	if err != nil {
-		log.Fatalf("could not open input file: %v", err)
+	if *v {
+		fmt.Printf("version %s", versionNum)
+	}
+
+	var src io.Reader
+	var err error
+	if *srcFile != "" {
+		src, err = os.Open(*srcFile)
+		if err != nil {
+			log.Fatalf("could not open input file: %v", err)
+		}
+		src.(io.ReadCloser).Close()
+	} else {
+		src = bufio.NewReader(os.Stdin)
+		if err != nil {
+			log.Fatalf("could not read from stdin: %v", err)
+		}
 	}
 
 	var w io.Writer
@@ -54,7 +68,7 @@ func Execute() {
 	}
 }
 
-func analyzeCode(src []byte, fileName string, onlyPublic bool, w io.Writer) error {
+func analyzeCode(src io.Reader, fileName string, onlyPublic bool, w io.Writer) error {
 	fset := token.NewFileSet()
 	file, err := parser.ParseFile(fset, fileName, src, parser.ParseComments)
 	if err != nil {
