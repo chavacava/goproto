@@ -37,7 +37,7 @@ func Execute() {
 		if err != nil {
 			log.Fatalf("could not open input file: %v", err)
 		}
-		src.(io.ReadCloser).Close()
+		defer src.(io.ReadCloser).Close()
 	} else {
 		src = bufio.NewReader(os.Stdin)
 		if err != nil {
