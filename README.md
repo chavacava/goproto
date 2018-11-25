@@ -1,7 +1,7 @@
 # goproto
-Utility to generate funcs prototypes from Go source code.
+Utility to generate func prototypes from GO source code.
 
-Useful when distributing Go applications binary.
+Useful when distributing GO applications binary.
 
 ```
 Usage goproto:
